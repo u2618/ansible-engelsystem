@@ -1,0 +1,20 @@
+---
+
+engelsystem_user: 'engelsystem'
+engelsystem_group: 'engelsystem'
+engelsystem_userhome: '/srv/engelsystem'
+
+engelsystem_path: '/srv/engelsystem/engelsystem'
+
+engelsystem_dbname: 'engelsystem'
+engelsystem_dbuser: 'engelsystem'
+engelsystem_dbpass: 'topsecret'
+engelsystem_dbhost: 'localhost'
+
+engelsystem_contactemail: 'mailto:topf@zapf.in'
+engelsystem_noreplyemail: 'noreply@zapf.in'
+
+engelsystem_ldaphost: 'localhost'
+engelsystem_ldapbasedn: 'dc=example,dc=com'
+engelsystem_ldapuserou: 'ou=users'
+

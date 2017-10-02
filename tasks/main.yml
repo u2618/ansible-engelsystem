@@ -1,0 +1,69 @@
+---
+
+- name: install dependencies
+  apt: name={{item}} state=installed
+  with_items:
+  - git-core
+  - python-mysqldb
+
+- name: Create engelsystem group
+  group:
+     name:   '{{ engelsystem_group }}'
+     system: yes
+
+- name: Create engelsystem user
+  user:
+    name:   '{{ engelsystem_user }}'
+    group:  '{{ engelsystem_group }}'
+    home:   '{{ engelsystem_userhome }}'
+    system: yes
+  register: engelsystem_user_created
+
+- name: Download engelsystem git repo
+  git:
+    repo: 'https://github.com/u2618/engelsystem'
+    dest: '{{ engelsystem_path }}'
+    version: "{{ engelsystem_version | default('HEAD') }}"
+  become: yes
+  become_user: '{{ engelsystem_user }}'
+  register: engelsystem_git_result
+
+- name: Install config.php
+  template:
+    src: 'config.php.jinja2'
+    dest: '{{ engelsystem_path }}/config/config.php'
+    owner: '{{ engelsystem_user }}'
+    group: '{{ engelsystem_group }}'
+    mode: 0644
+  register: engelsystem_config_json_result
+
+- name: Populate database only first run
+  command: touch {{ engelsystem_path }}/install_sql.done creates={{ engelsystem_path }}/install_sql.done
+  register: mysql_db_installed
+
+- name: Check if Database is populated
+  stat: path={{ engelsystem_path }}/install_sql.done
+  register: database_populated
+
+- name: Populate Database
+  mysql_db:
+    name: '{{ engelsystem_dbname }}'
+    login_host: '{{ engelsystem_dbhost }}'
+    login_user: '{{ engelsystem_dbuser }}'
+    login_password: '{{ engelsystem_dbpass }}'
+    state: import
+    target: '{{ engelsystem_path }}/db/install.sql'
+  when: database_populated.stat.exists == False
+    
+- name: Update Database
+  mysql_db:
+    name: '{{ engelsystem_dbname }}'
+    login_host: '{{ engelsystem_dbhost }}'
+    login_user: '{{ engelsystem_dbuser }}'
+    login_password: '{{ engelsystem_dbpass }}'
+    state: import
+    target: '{{ engelsystem_path }}/db/update.sql'
+  when: database_populated.stat.exists == False
+
+- name: Inital database Population done
+  command: touch {{ engelsystem_path }}/install_sql.done 
