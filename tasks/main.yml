@@ -28,6 +28,12 @@
   become_user: '{{ engelsystem_user }}'
   register: engelsystem_git_result
 
+- file:
+    path: '{{ engelsystem_path }}/import/'
+    owner: '{{ engelsystem_user }}'
+    group: 'www-data'
+    mode: 0664
+
 - name: Install config.php
   template:
     src: 'config.php.jinja2'
